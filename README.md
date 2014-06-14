@@ -1,6 +1,10 @@
 Build a Docker container with all packages from a BOSH job.
 
-Usage: bosh-job-docker <bosh-release-tarball> <job-name>
+Usage:
+
+```
+bosh-job-docker <bosh-release-tarball> <job-name>
+```
 
 This compiles the job's packages in the container and leaves
 /var/vcap/packages in the same state it would be in on a deployed job.
