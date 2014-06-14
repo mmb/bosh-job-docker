@@ -1,0 +1,73 @@
+#!/usr/bin/env ruby
+
+require 'fileutils'
+require 'logger'
+require 'tempfile'
+require 'yaml'
+
+if ARGV.size != 2
+  $stderr.puts "Usage: #{$0} release_tarball job_name"
+  exit 1
+end
+
+release_tarball, job = ARGV
+
+def untar_in(tarball, dir)
+  pid = spawn('tar', '-C', dir, '-xzf', tarball)
+  Process.wait(pid)
+  raise 'tar command failed' unless $?.success?
+end
+
+def package_deps(package, release_manifest)
+  deps = (release_manifest['packages'].find { |p| p['name'] == package }['dependencies']).map { |p| package_deps(p, release_manifest) }.flatten
+  deps << package
+end
+
+logger = Logger.new($stdout)
+logger.info("Building job #{job} from #{release_tarball}")
+
+release_dir = Dir.mktmpdir
+untar_in(release_tarball, release_dir)
+
+job_tarball = File.join(release_dir, 'jobs', "#{job}.tgz")
+job_dir = Dir.mktmpdir
+untar_in(job_tarball, job_dir)
+
+job_spec = YAML.load_file(File.join(job_dir, 'job.MF'))
+packages = job_spec['packages']
+
+release_manifest = YAML.load_file(File.join(release_dir, 'release.MF'))
+build_order = packages.inject([]) { |order, p| order + package_deps(p, release_manifest) }.uniq
+logger.info("Package build order: #{build_order}")
+
+work_dir = "./#{job}-docker"
+FileUtils.rm_rf(work_dir)
+FileUtils.mkdir(work_dir)
+
+build_dir = FileUtils.mkdir_p(File.join(work_dir, 'build'))
+
+docker_file = open(File.join(work_dir, 'Dockerfile'), 'w')
+vcap_packages = '/var/vcap/packages'
+
+docker_file << "FROM ubuntu\n\n"
+docker_file << "RUN apt-get update\n"
+docker_file << "RUN apt-get install -y build-essential\n"
+docker_file << "RUN apt-get install -y libreadline-dev\n"
+docker_file << "RUN apt-get install -y zlib1g-dev\n"
+docker_file << "ADD build /build\n"
+docker_file << "RUN mkdir -p #{vcap_packages}\n"
+docker_file << "\n"
+
+build_order.each do |package|
+  logger.info("Building package #{package}")
+  package_tarball = File.join(release_dir, 'packages', "#{package}.tgz")
+  package_build_dir = File.join(build_dir, package)
+  FileUtils.mkdir_p(package_build_dir)
+  untar_in(package_tarball, package_build_dir)
+
+  docker_file << "# #{package}\n"
+  docker_file << "ENV BOSH_INSTALL_TARGET #{vcap_packages}/#{package}\n"
+  docker_file << "RUN cd /build/#{package} && bash packaging\n\n"
+end
+
+logger.info("Dockerfile written to #{work_dir}")
