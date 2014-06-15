@@ -51,6 +51,7 @@ docker_file.run('apt-get update')
 docker_file.apt_get(%w{
   build-essential
   cmake
+  libbz2-dev
   libcap-dev
   libreadline-dev
   libssl-dev
