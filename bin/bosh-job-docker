@@ -2,6 +2,7 @@
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
 require 'bosh_job_docker/tar_extracter'
+require 'bosh_job_docker/package_dep_resolver'
 
 require 'fileutils'
 require 'logger'
@@ -14,11 +15,6 @@ if ARGV.size != 2
 end
 
 release_tarball, job = ARGV
-
-def package_deps(package, release_manifest)
-  deps = (release_manifest['packages'].find { |p| p['name'] == package }['dependencies']).map { |p| package_deps(p, release_manifest) }.flatten
-  deps << package
-end
 
 logger = Logger.new($stdout)
 logger.info("Building job #{job} from #{release_tarball}")
@@ -36,7 +32,8 @@ job_spec = YAML.load_file(File.join(job_dir, 'job.MF'))
 packages = job_spec['packages']
 
 release_manifest = YAML.load_file(File.join(release_dir, 'release.MF'))
-build_order = packages.inject([]) { |order, p| order + package_deps(p, release_manifest) }.uniq
+resolver = BoshJobDocker::PackageDepResolver.new(release_manifest)
+build_order = packages.inject([]) { |order, p| order + resolver.package_deps(p) }.uniq
 logger.info("Package build order: #{build_order}")
 
 work_dir = "./#{job}-docker"
