@@ -1,14 +1,11 @@
 #!/usr/bin/env ruby
 $:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
-require 'bosh_job_docker/tar_extracter'
-require 'bosh_job_docker/package_dep_resolver'
 require 'bosh_job_docker/docker_file'
+require 'bosh_job_docker/release_tarball'
 
 require 'fileutils'
 require 'logger'
-require 'tempfile'
-require 'yaml'
 
 if ARGV.size != 2
   $stderr.puts "Usage: #{$0} release_tarball job_name"
@@ -17,24 +14,12 @@ end
 
 release_tarball, job = ARGV
 
+release_tarball_obj = BoshJobDocker::ReleaseTarball.new(release_tarball)
+
 logger = Logger.new($stdout)
 logger.info("Building job #{job} from #{release_tarball}")
 
-release_dir = Dir.mktmpdir
-tar_extracter = BoshJobDocker::TarExtracter.new
-
-tar_extracter.extract(release_tarball, release_dir)
-
-job_tarball = File.join(release_dir, 'jobs', "#{job}.tgz")
-job_dir = Dir.mktmpdir
-tar_extracter.extract(job_tarball, job_dir)
-
-job_spec = YAML.load_file(File.join(job_dir, 'job.MF'))
-packages = job_spec['packages']
-
-release_manifest = YAML.load_file(File.join(release_dir, 'release.MF'))
-resolver = BoshJobDocker::PackageDepResolver.new(release_manifest)
-build_order = packages.inject([]) { |order, p| order + resolver.package_deps(p) }.uniq
+build_order = release_tarball_obj.build_order(job)
 logger.info("Package build order: #{build_order}")
 
 work_dir = "./#{job}-docker"
@@ -66,10 +51,8 @@ docker_file.blank_line
 
 build_order.each do |package|
   logger.info("Building package #{package}")
-  package_tarball = File.join(release_dir, 'packages', "#{package}.tgz")
   package_build_dir = File.join(build_dir, package)
-  FileUtils.mkdir_p(package_build_dir)
-  tar_extracter.extract(package_tarball, package_build_dir)
+  release_tarball_obj.extract_package(package, package_build_dir)
 
   docker_file.comment(package)
   docker_file.env('BOSH_INSTALL_TARGET', "#{vcap_packages}/#{package}")
