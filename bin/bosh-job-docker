@@ -67,6 +67,7 @@ build_order.each do |package|
 
   docker_file << "# #{package}\n"
   docker_file << "ENV BOSH_INSTALL_TARGET #{vcap_packages}/#{package}\n"
+  docker_file << "RUN mkdir $BOSH_INSTALL_TARGET\n"
   docker_file << "RUN cd /build/#{package} && bash packaging\n\n"
 end
 
