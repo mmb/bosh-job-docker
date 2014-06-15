@@ -1,4 +1,7 @@
 #!/usr/bin/env ruby
+$:.unshift File.join(File.dirname(__FILE__), '..', 'lib')
+
+require 'bosh_job_docker/tar_extracter'
 
 require 'fileutils'
 require 'logger'
@@ -12,12 +15,6 @@ end
 
 release_tarball, job = ARGV
 
-def untar_in(tarball, dir)
-  pid = spawn('tar', '-C', dir, '-xzf', tarball)
-  Process.wait(pid)
-  raise 'tar command failed' unless $?.success?
-end
-
 def package_deps(package, release_manifest)
   deps = (release_manifest['packages'].find { |p| p['name'] == package }['dependencies']).map { |p| package_deps(p, release_manifest) }.flatten
   deps << package
@@ -27,11 +24,13 @@ logger = Logger.new($stdout)
 logger.info("Building job #{job} from #{release_tarball}")
 
 release_dir = Dir.mktmpdir
-untar_in(release_tarball, release_dir)
+tar_extracter = BoshJobDocker::TarExtracter.new
+
+tar_extracter.extract(release_tarball, release_dir)
 
 job_tarball = File.join(release_dir, 'jobs', "#{job}.tgz")
 job_dir = Dir.mktmpdir
-untar_in(job_tarball, job_dir)
+tar_extracter.extract(job_tarball, job_dir)
 
 job_spec = YAML.load_file(File.join(job_dir, 'job.MF'))
 packages = job_spec['packages']
@@ -68,7 +67,7 @@ build_order.each do |package|
   package_tarball = File.join(release_dir, 'packages', "#{package}.tgz")
   package_build_dir = File.join(build_dir, package)
   FileUtils.mkdir_p(package_build_dir)
-  untar_in(package_tarball, package_build_dir)
+  tar_extracter.extract(package_tarball, package_build_dir)
 
   docker_file << "# #{package}\n"
   docker_file << "ENV BOSH_INSTALL_TARGET #{vcap_packages}/#{package}\n"
