@@ -12,14 +12,14 @@ if ARGV.size != 2
   exit 1
 end
 
-release_tarball, job = ARGV
+release_tarball_path, job = ARGV
 
-release_tarball_obj = BoshJobDocker::ReleaseTarball.new(release_tarball)
+release_tarball = BoshJobDocker::ReleaseTarball.new(release_tarball_path)
 
 logger = Logger.new($stdout)
 logger.info("Building job #{job} from #{release_tarball}")
 
-build_order = release_tarball_obj.build_order(job)
+build_order = release_tarball.build_order(job)
 logger.info("Package build order: #{build_order}")
 
 work_dir = "./#{job}-docker"
@@ -52,7 +52,7 @@ docker_file.blank_line
 build_order.each do |package|
   logger.info("Building package #{package}")
   package_build_dir = File.join(build_dir, package)
-  release_tarball_obj.extract_package(package, package_build_dir)
+  release_tarball.extract_package(package, package_build_dir)
 
   docker_file.comment(package)
   docker_file.env('BOSH_INSTALL_TARGET', "#{vcap_packages}/#{package}")
