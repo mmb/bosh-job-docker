@@ -1,9 +1,10 @@
+# encoding: UTF-8
+
 require 'stringio'
 
 module BoshDockerJob
-
+  # Builds a Dockerfile.
   class DockerFile
-
     def initialize
       @buffer = StringIO.new
     end

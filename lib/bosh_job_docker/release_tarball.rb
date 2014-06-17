@@ -1,3 +1,5 @@
+# encoding: UTF-8
+
 require 'fileutils'
 require 'tempfile'
 require 'yaml'
@@ -6,6 +8,7 @@ require 'bosh_job_docker/package_dep_resolver'
 require 'bosh_job_docker/tar_extracter'
 
 module BoshJobDocker
+  # A BOSH release tarball.
   class ReleaseTarball
     def initialize(path)
       @work_dir = Dir.mktmpdir

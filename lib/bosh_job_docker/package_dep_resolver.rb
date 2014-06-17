@@ -1,4 +1,7 @@
+# encoding: UTF-8
+
 module BoshJobDocker
+  # BOSH package dependency resolver.
   class PackageDepResolver
     def initialize(release_manifest)
       @release_manifest = release_manifest

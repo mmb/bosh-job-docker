@@ -7,11 +7,11 @@ Gem::Specification.new do |s|
   s.description = s.summary
   s.homepage = 'https://github.com/mmb/bosh_job_docker'
   s.authors = ['Matthew M. Boedicker']
-  s.email = %w{matthewm@boedicker.org}
+  s.email = %w(matthewm@boedicker.org)
   s.license = 'MIT'
 
   s.files = `git ls-files`.split("\n")
-  s.executables = %w{bosh-job-docker}
+  s.executables = %w(bosh-job-docker)
 
   s.add_development_dependency 'rspec', '~> 3.0'
 end
