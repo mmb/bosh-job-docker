@@ -26,6 +26,7 @@ logger.info("Package build order: #{build_order}")
 
 work_dir = "./#{job}-docker"
 FileUtils.rm_rf(work_dir)
+logger.info("Cleaning #{work_dir}")
 FileUtils.mkdir(work_dir)
 
 build_dir = FileUtils.mkdir_p(File.join(work_dir, 'build'))
