@@ -1,5 +1,5 @@
 # encoding: UTF-8
-#
+
 require 'stringio'
 require 'tempfile'
 

@@ -1,5 +1,5 @@
 # encoding: UTF-8
-#
+
 require 'tempfile'
 
 require 'bosh_job_docker/tar_extracter'
