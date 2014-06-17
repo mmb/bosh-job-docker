@@ -12,4 +12,6 @@ Gem::Specification.new do |s|
 
   s.files = `git ls-files`.split("\n")
   s.executables = %w{bosh-job-docker}
+
+  s.add_development_dependency 'rspec', '~> 3.0'
 end
