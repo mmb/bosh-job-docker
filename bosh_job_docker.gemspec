@@ -14,5 +14,6 @@ Gem::Specification.new do |s|
   s.executables = %w(bosh_job_docker)
 
   s.add_development_dependency 'rake', '~> 10.3'
+  s.add_development_dependency 'rubocop', '~> 0.23'
   s.add_development_dependency 'rspec', '~> 3.0'
 end
