@@ -31,7 +31,7 @@ FileUtils.mkdir(work_dir)
 
 build_dir = FileUtils.mkdir_p(File.join(work_dir, 'build'))
 
-docker_file = BoshDockerJob::DockerFile.new
+docker_file = BoshJobDocker::DockerFile.new
 vcap_packages = '/var/vcap/packages'
 
 docker_file.from('ubuntu')

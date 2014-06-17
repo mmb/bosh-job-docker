@@ -2,7 +2,7 @@
 
 require 'stringio'
 
-module BoshDockerJob
+module BoshJobDocker
   # Builds a Dockerfile.
   class DockerFile
     def initialize
