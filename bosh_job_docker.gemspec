@@ -11,7 +11,7 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.files = `git ls-files`.split("\n")
-  s.executables = %w(bosh-job-docker)
+  s.executables = %w(bosh_job_docker)
 
   s.add_development_dependency 'rspec', '~> 3.0'
 end
