@@ -3,7 +3,7 @@ Build a Docker container with all packages from a BOSH job.
 Usage:
 
 ```
-bin/bosh-job-docker <bosh-release-tarball> <job-name>
+bundle exec bosh-job-docker <bosh-release-tarball> <job-name>
 ```
 
 This compiles the job's packages in the container and leaves
@@ -13,6 +13,6 @@ It doesn't start any job processes but it might someday.
 Example:
 
 ```sh
-bin/bosh-job-docker ~/Downloads/bosh-2605.tgz director
+bundle exec bosh-job-docker ~/Downloads/bosh-2605.tgz director
 sudo docker build director-docker
 ```
