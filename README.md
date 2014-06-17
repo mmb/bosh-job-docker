@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/mmb/bosh_job_docker.png)](https://travis-ci.org/mmb/bosh_job_docker) [![Code Climate](https://codeclimate.com/github/mmb/bosh_job_docker.png)](https://codeclimate.com/github/mmb/bosh_job_docker)
 Build a Docker container with all packages from a BOSH job.
 
 Usage:
