@@ -1,6 +1,5 @@
 # encoding: UTF-8
 
-require 'stringio'
 require 'tempfile'
 
 require 'bosh_job_docker/docker_file'
