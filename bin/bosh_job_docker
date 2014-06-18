@@ -3,7 +3,7 @@
 
 $LOAD_PATH.unshift File.join(File.dirname(__FILE__), '..', 'lib')
 
-require 'bosh_job_docker/docker_file'
+require 'bosh_job_docker/bosh_job_docker_file'
 require 'bosh_job_docker/release_tarball'
 
 require 'fileutils'
@@ -31,39 +31,14 @@ FileUtils.mkdir(work_dir)
 
 build_dir = FileUtils.mkdir_p(File.join(work_dir, 'build'))
 
-docker_file = BoshJobDocker::DockerFile.new
-vcap_packages = '/var/vcap/packages'
-
-docker_file.from('ubuntu')
-docker_file.run('apt-get update')
-docker_file.apt_get(%w(
-  build-essential
-  cmake
-  gettext
-  libbz2-dev
-  libcap-dev
-  libreadline-dev
-  libssl-dev
-  libxml2-dev
-  libxslt1-dev
-  zlib1g-dev
-  unzip
-))
-
-docker_file.add('build', '/build')
-docker_file.run("mkdir -p #{vcap_packages}")
-docker_file.blank_line
+docker_file = BoshJobDocker::BoshJobDockerFile.new
 
 build_order.each do |package|
   logger.info("Building package #{package}")
   package_build_dir = File.join(build_dir, package)
   release_tarball.extract_package(package, package_build_dir)
 
-  docker_file.comment(package)
-  docker_file.env('BOSH_INSTALL_TARGET', "#{vcap_packages}/#{package}")
-  docker_file.run('mkdir $BOSH_INSTALL_TARGET')
-  docker_file.run("cd /build/#{package} && bash packaging")
-  docker_file.blank_line
+  docker_file.add_package(package)
 end
 
 docker_file.write(File.join(work_dir, 'Dockerfile'))
