@@ -39,6 +39,7 @@ docker_file.run('apt-get update')
 docker_file.apt_get(%w(
   build-essential
   cmake
+  gettext
   libbz2-dev
   libcap-dev
   libreadline-dev
@@ -46,6 +47,7 @@ docker_file.apt_get(%w(
   libxml2-dev
   libxslt1-dev
   zlib1g-dev
+  unzip
 ))
 
 docker_file.add('build', '/build')
